@@ -10,7 +10,7 @@ services:
 
   jhipster:
     image: iumar28/deploysunday:latest
-    container_name: deploysunday-mongodb
+    container_name: deploysunday
     depends_on:
       - mongo
     environment:
