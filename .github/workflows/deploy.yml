@@ -1,0 +1,77 @@
+name: Deploy to EC2 and Run Docker
+
+on:
+  workflow_run:
+    workflows: ["Build and Dockerize"]
+    types:
+      - completed
+
+jobs:
+  check-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print message
+        run: echo "Workflow received completion status from Build and Dockerize."
+
+  deploy-to-ec2:
+    runs-on: ubuntu-latest
+    needs: check-status
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      EC2_PUBLIC_KEY: ${{ secrets.EC2_PUBLIC_KEY }}
+      EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+
+      - name: SSH into EC2 Instance and Deploy Docker Image
+        run: |
+          # Set up the SSH key and permissions
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/ec2-keypair.pem
+          chmod 600 ~/.ssh/ec2-keypair.pem
+
+          # Add EC2 IP to known hosts to avoid prompt
+          ssh-keyscan -H ${{ secrets.EC2_IP }} >> ~/.ssh/known_hosts
+
+          # SSH into EC2 instance
+          ssh -i ~/.ssh/ec2-keypair.pem ubuntu@${{ secrets.EC2_IP }} <<EOF
+            # Update package list and install prerequisites
+            sudo apt update
+            sudo apt install -y docker.io
+            sudo systemctl start docker
+            sudo systemctl enable docker
+
+            # Add user to Docker group
+            sudo usermod -aG docker ubuntu
+
+            # Refresh group membership
+            newgrp docker
+
+            # Install Docker Compose
+            DOCKER_COMPOSE_VERSION="2.20.2"
+            sudo curl -L "https://github.com/docker/compose/releases/download/v\$DOCKER_COMPOSE_VERSION/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+
+            # Verify Docker Compose installation
+            docker-compose --version
+
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "iumar28" --password-stdin
+
+            # Pull Docker image from Docker Hub
+            docker pull iumar28/deploysunday:latest
+
+            # Clone docker-compose repository
+            if [ -d "deploysunday" ]; then
+              rm -rf deploysunday
+            fi
+            git clone https://github.com/iumar28/deploysunday
+
+            cd deploysunday
+
+            # Build and deploy the Docker image
+            docker-compose up -d
+          EOF

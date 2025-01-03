@@ -1,0 +1,26 @@
+{
+  "generator-jhipster": {
+    "applicationType": "monolith",
+    "baseName": "deploysunday",
+    "buildTool": "maven",
+    "cacheProvider": "hazelcast",
+    "clientFramework": "react",
+    "clientPackageManager": "npm",
+    "clientTheme": null,
+    "creationTimestamp": 1735884081203,
+    "databaseType": "mongodb",
+    "enableHibernateCache": false,
+    "enableTranslation": false,
+    "entities": [],
+    "jhipsterVersion": "8.8.0",
+    "jwtSecretKey": "NTRkMDI3YjE3OTdhYTU3NzNjNTA2M2I0MDljZTA0Y2MwMjc2OTRkZjFlZjMyY2M0ZmY0NDAwMTAzODRjYjdmOTM1MmU4ZTUzMDQ5MzQ1MWY0M2U4MzQ4NWVlYjUxMjU1YTMyNTk3ZTY1ZGY5ODkwOTBhOGEzOTAxOWY1OGExM2I=",
+    "microfrontend": false,
+    "nativeLanguage": "en",
+    "otherLanguages": null,
+    "prodDatabaseType": "mongodb",
+    "reactive": false,
+    "serviceDiscoveryType": null,
+    "testFrameworks": ["cypress"],
+    "websocket": null
+  }
+}

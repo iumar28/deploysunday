@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+
+  jhipster:
+    image: iumar28/deploysunday:latest
+    container_name: deploysunday-mongodb
+    depends_on:
+      - mongo
+    environment:
+      SPRING_DATASOURCE_URL: mongodb://mongo:27017/deploysundaydb
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
